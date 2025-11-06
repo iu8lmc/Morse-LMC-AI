@@ -5,6 +5,24 @@
     <TargetFramework>net7.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+
+    <!-- Publishing Configuration -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+
+    <!-- Application Info -->
+    <AssemblyName>MorseDecoderAI</AssemblyName>
+    <Version>1.1.0</Version>
+    <Company>RadioLogger Pro</Company>
+    <Product>Morse Decoder AI</Product>
+    <Description>Decodificatore Morse con AI e Machine Learning</Description>
+    <Copyright>Copyright © 2025</Copyright>
+
+    <!-- Icon (opzionale) -->
+    <!-- <ApplicationIcon>icon.ico</ApplicationIcon> -->
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Spectre.Console" Version="0.48.0" />

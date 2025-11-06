@@ -156,6 +156,20 @@ private void LoadLogEntries()
         {
 
         }
+
+        private void BtnMorseDecoder_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var morseWindow = new MorseDecoder.MorseDecoderWindow();
+                morseWindow.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Errore nell'apertura del Morse Decoder: {ex.Message}",
+                              "Errore", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
     }
 }
 

@@ -126,6 +126,7 @@
             <Button Content="New Log" Style="{StaticResource ProfessionalButtonStyle}"/>
             <Button Content="Save Log" Style="{StaticResource ProfessionalButtonStyle}"/>
             <Button Content="Load Log" Style="{StaticResource ProfessionalButtonStyle}"/>
+            <Button x:Name="btnMorseDecoder" Content="🎙 Morse Decoder AI" Style="{StaticResource ProfessionalButtonStyle}" Click="BtnMorseDecoder_Click"/>
             <!-- More buttons or controls -->
         </StackPanel>
     </Border>

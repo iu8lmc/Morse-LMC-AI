@@ -23,6 +23,9 @@ namespace RadioLoggerApp.MorseDecoder
         private MorseDecoder? morseDecoder;
         private MorseAIEnhancer? aiEnhancer;
 
+        // Impostazioni
+        private MorseDecoderSettings settings;
+
         // Timer per aggiornamenti UI
         private DispatcherTimer? updateTimer;
         private DispatcherTimer? processingTimer;
@@ -47,6 +50,9 @@ namespace RadioLoggerApp.MorseDecoder
             spectrumBuffer = new Queue<double>(GraphBufferSize);
             isDecoding = false;
 
+            // Carica le impostazioni salvate
+            settings = SettingsManager.LoadSettings();
+
             InitializeComponents();
             InitializeGraphs();
             LoadAudioDevices();
@@ -62,9 +68,21 @@ namespace RadioLoggerApp.MorseDecoder
         {
             try
             {
-                audioCapture = new MorseAudioCapture(sampleRate: 44100, channels: 1);
-                signalProcessor = new MorseSignalProcessor(sampleRate: 44100);
-                morseDecoder = new MorseDecoder(initialWPM: 20);
+                audioCapture = new MorseAudioCapture(
+                    sampleRate: settings.SampleRate,
+                    channels: 1,
+                    bufferSizeMs: settings.BufferSizeMs);
+
+                signalProcessor = new MorseSignalProcessor(
+                    sampleRate: settings.SampleRate,
+                    fftSize: settings.FFTSize,
+                    targetFrequency: settings.TargetFrequency,
+                    bandwidth: settings.Bandwidth);
+
+                morseDecoder = new MorseDecoder(
+                    initialWPM: settings.InitialWPM,
+                    threshold: settings.DetectionThreshold);
+
                 aiEnhancer = new MorseAIEnhancer();
 
                 // Sottoscrivi agli eventi
@@ -344,13 +362,69 @@ namespace RadioLoggerApp.MorseDecoder
         /// </summary>
         private void BtnSettings_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Finestra impostazioni in sviluppo.\n\n" +
-                          "Funzionalità disponibili:\n" +
-                          "- Auto-calibrazione WPM\n" +
-                          "- Rilevamento automatico frequenza\n" +
-                          "- Machine Learning integrato\n" +
-                          "- Filtri adattivi AGC",
-                          "Impostazioni", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                // Controlla se la decodifica è in corso
+                if (isDecoding)
+                {
+                    var result = MessageBox.Show(
+                        "La decodifica è in corso. Le modifiche alle impostazioni saranno applicate al prossimo avvio.\n\n" +
+                        "Vuoi continuare?",
+                        "Decodifica in Corso",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.No)
+                        return;
+                }
+
+                // Apri la finestra delle impostazioni
+                var settingsWindow = new SettingsWindow(settings)
+                {
+                    Owner = this
+                };
+
+                if (settingsWindow.ShowDialog() == true)
+                {
+                    // Le impostazioni sono state modificate e salvate
+                    settings = settingsWindow.Settings;
+
+                    LogEvent("Impostazioni aggiornate. Riavviare la decodifica per applicare le modifiche.");
+
+                    // Se non stiamo decodificando, reinizializza i componenti
+                    if (!isDecoding)
+                    {
+                        ReinitializeComponents();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogEvent($"Errore nell'apertura delle impostazioni: {ex.Message}");
+                MessageBox.Show($"Errore nell'apertura delle impostazioni: {ex.Message}",
+                              "Errore", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Reinizializza i componenti con le nuove impostazioni
+        /// </summary>
+        private void ReinitializeComponents()
+        {
+            try
+            {
+                // Pulisci i componenti esistenti
+                audioCapture?.Dispose();
+
+                // Reinizializza
+                InitializeComponents();
+
+                LogEvent("Componenti reinizializzati con le nuove impostazioni");
+            }
+            catch (Exception ex)
+            {
+                LogEvent($"Errore nella reinizializzazione: {ex.Message}");
+            }
         }
 
         /// <summary>

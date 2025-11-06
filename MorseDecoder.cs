@@ -35,11 +35,11 @@ namespace RadioLoggerApp.MorseDecoder
             { ".-.-.", '+' }, { "-....-", '-' }, { "..--.-", '_' }, { ".-..-.", '"' },
             { "...-..-", '$' }, { ".--.-.", '@' },
 
-            // Segnali prosigns
-            { ".-.-.", '<AR>' },  // End of message
-            { "-...-", '<BT>' },  // Break
-            { "...-.-", '<SK>' }, // End of contact
-            { "...-..", '<SOS>' } // SOS
+            // Segnali prosigns (rimossi - gestiti separatamente)
+            // { ".-.-.", "<AR>" },  // End of message - DUPLICATO con +
+            // { "-...-", "<BT>" },  // Break - DUPLICATO con =
+            // { "...-.-", "<SK>" }, // End of contact
+            // { "...-..", "<SOS>" } // SOS
         };
 
         // Stato del decoder

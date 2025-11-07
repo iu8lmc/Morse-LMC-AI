@@ -24,7 +24,7 @@ namespace RadioLoggerApp.MorseDecoder
         private MorseAIEnhancer? aiEnhancer;
 
         // Impostazioni
-        private MorseDecoderSettings settings;
+        private MorseDecoderSettings settings = new MorseDecoderSettings();
 
         // Timer per aggiornamenti UI
         private DispatcherTimer? updateTimer;
@@ -44,21 +44,49 @@ namespace RadioLoggerApp.MorseDecoder
 
         public MorseDecoderWindow()
         {
-            InitializeComponent();
+            try
+            {
+                InitializeComponent();
 
-            waveformBuffer = new Queue<double>(GraphBufferSize);
-            spectrumBuffer = new Queue<double>(GraphBufferSize);
-            isDecoding = false;
+                waveformBuffer = new Queue<double>(GraphBufferSize);
+                spectrumBuffer = new Queue<double>(GraphBufferSize);
+                isDecoding = false;
 
-            // Carica le impostazioni salvate
-            settings = SettingsManager.LoadSettings();
+                // Carica le impostazioni salvate con fallback ai default
+                try
+                {
+                    settings = SettingsManager.LoadSettings();
+                }
+                catch (Exception ex)
+                {
+                    // Se il caricamento fallisce, usa impostazioni di default
+                    settings = new MorseDecoderSettings();
+                    MessageBox.Show(
+                        $"Impossibile caricare le impostazioni salvate. Verranno usate le impostazioni predefinite.\n\n" +
+                        $"Errore: {ex.Message}",
+                        "Avviso",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                }
 
-            InitializeComponents();
-            InitializeGraphs();
-            LoadAudioDevices();
+                InitializeComponents();
+                InitializeGraphs();
+                LoadAudioDevices();
 
-            Loaded += MorseDecoderWindow_Loaded;
-            Closing += MorseDecoderWindow_Closing;
+                Loaded += MorseDecoderWindow_Loaded;
+                Closing += MorseDecoderWindow_Closing;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Errore critico durante l'inizializzazione di MorseDecoderWindow:\n\n" +
+                    $"{ex.Message}\n\n" +
+                    $"Stack Trace:\n{ex.StackTrace}",
+                    "Errore Critico",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                throw;
+            }
         }
 
         /// <summary>

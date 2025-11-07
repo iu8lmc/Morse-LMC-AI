@@ -14,10 +14,42 @@ namespace RadioLoggerApp
 
     public MainWindow()
     {
-        InitializeComponent();
-        dbHandler = new SQLiteDBHandler("radiologger.db");
-        LogEntries = new ObservableCollection<LogEntry>();
+        try
+        {
+            InitializeComponent();
 
+            try
+            {
+                dbHandler = new SQLiteDBHandler("radiologger.db");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Attenzione: Impossibile inizializzare il database.\n\n" +
+                    $"L'applicazione funzionerà in modalità limitata.\n\n" +
+                    $"Errore: {ex.Message}",
+                    "Avviso Database",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                // Continua comunque con un handler null (gestito dopo)
+                dbHandler = null!;
+            }
+
+            LogEntries = new ObservableCollection<LogEntry>();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Errore critico durante l'inizializzazione di MainWindow:\n\n" +
+                $"{ex.Message}\n\n" +
+                $"Tipo: {ex.GetType().Name}\n\n" +
+                $"Stack Trace:\n{ex.StackTrace}",
+                "Errore Critico",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            throw;
+        }
     }
      
     private void NewLog_Click(object sender, RoutedEventArgs e)

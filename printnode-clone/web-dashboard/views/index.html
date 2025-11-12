@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrintNode Clone - Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🖨️ PrintNode Clone Dashboard</h1>
+            <div class="header-info">
+                <span id="connection-status" class="status-badge offline">Disconnesso</span>
+                <span id="server-time"></span>
+            </div>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="overview">Panoramica</button>
+            <button class="tab-btn" data-tab="clients">Client</button>
+            <button class="tab-btn" data-tab="printers">Stampanti</button>
+            <button class="tab-btn" data-tab="jobs">Lavori di Stampa</button>
+            <button class="tab-btn" data-tab="print">Nuova Stampa</button>
+        </nav>
+
+        <!-- Tab: Panoramica -->
+        <div id="overview" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <h3 id="stats-clients">0</h3>
+                        <p>Client Connessi</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🖨️</div>
+                    <div class="stat-info">
+                        <h3 id="stats-printers">0</h3>
+                        <p>Stampanti Totali</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📄</div>
+                    <div class="stat-info">
+                        <h3 id="stats-jobs-pending">0</h3>
+                        <p>Lavori in Coda</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <h3 id="stats-jobs-completed">0</h3>
+                        <p>Lavori Completati</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🕒 Lavori Recenti</h2>
+                <div id="recent-jobs-list">
+                    <p class="empty-state">Nessun lavoro recente</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Client -->
+        <div id="clients" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h2>👥 Client Registrati</h2>
+                    <button class="btn btn-primary" onclick="showRegisterClientModal()">+ Registra Nuovo Client</button>
+                </div>
+                <div id="clients-list">
+                    <p class="empty-state">Nessun client registrato</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Stampanti -->
+        <div id="printers" class="tab-content">
+            <div class="section">
+                <h2>🖨️ Stampanti Disponibili</h2>
+                <div id="printers-list">
+                    <p class="empty-state">Nessuna stampante disponibile</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Lavori -->
+        <div id="jobs" class="tab-content">
+            <div class="section">
+                <h2>📄 Tutti i Lavori di Stampa</h2>
+                <div class="filters">
+                    <select id="job-status-filter">
+                        <option value="all">Tutti gli stati</option>
+                        <option value="pending">In Attesa</option>
+                        <option value="printing">In Stampa</option>
+                        <option value="completed">Completati</option>
+                        <option value="failed">Falliti</option>
+                    </select>
+                </div>
+                <div id="jobs-list">
+                    <p class="empty-state">Nessun lavoro disponibile</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Nuova Stampa -->
+        <div id="print" class="tab-content">
+            <div class="section">
+                <h2>📤 Invia Lavoro di Stampa</h2>
+                <form id="print-form" class="form">
+                    <div class="form-group">
+                        <label for="printer-select">Stampante</label>
+                        <select id="printer-select" required>
+                            <option value="">Seleziona una stampante...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="job-title">Titolo (opzionale)</label>
+                        <input type="text" id="job-title" placeholder="Nome del documento">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="file-upload">File da Stampare</label>
+                        <input type="file" id="file-upload" accept=".pdf,.txt,.jpg,.jpeg,.png" required>
+                        <small>Formati supportati: PDF, TXT, JPG, PNG</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-large">🖨️ Invia alla Stampante</button>
+                </form>
+
+                <div id="print-result" class="alert" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Registra Client -->
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeRegisterClientModal()">&times;</span>
+            <h2>Registra Nuovo Client</h2>
+            <form id="register-form" class="form">
+                <div class="form-group">
+                    <label for="client-name">Nome Client</label>
+                    <input type="text" id="client-name" placeholder="Es: Computer Ufficio" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Registra</button>
+            </form>
+            <div id="register-result" style="display: none; margin-top: 20px;">
+                <div class="alert alert-success">
+                    <h3>✓ Client registrato con successo!</h3>
+                    <p><strong>API Key:</strong></p>
+                    <code id="new-api-key" style="display: block; padding: 10px; background: #f0f0f0; margin: 10px 0; word-break: break-all;"></code>
+                    <p><small>⚠️ Copia questa chiave e salvala nel file .env del client. Non sarà più visibile.</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

@@ -2,7 +2,7 @@ require('dotenv').config();
 const io = require('socket.io-client');
 const PrinterScannerSimple = require('./PrinterScannerSimple');
 const PrintJobHandler = require('./PrintJobHandler');
-const ApiClient = require('./ApiClient');
+const ApiClientSimple = require('./ApiClientSimple');
 
 const SERVER_URL = process.env.SERVER_URL || 'http://localhost:3200';
 const API_KEY = process.env.API_KEY;
@@ -21,7 +21,7 @@ if (!API_KEY) {
 class PrintNodeClientSimple {
   constructor() {
     this.printerScanner = new PrinterScannerSimple();
-    this.apiClient = new ApiClient(SERVER_URL, API_KEY);
+    this.apiClient = new ApiClientSimple(SERVER_URL, API_KEY);
     this.socket = null;
     this.connected = false;
     this.printJobHandler = new PrintJobHandler(this.printerScanner, this.apiClient);

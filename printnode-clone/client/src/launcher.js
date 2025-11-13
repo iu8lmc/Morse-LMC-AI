@@ -80,17 +80,13 @@ if (!API_KEY) {
 // Tutto ok, avvia il client vero
 console.log('✓ Configurazione valida, avvio client...\n');
 
-// Prova a usare il client normale, altrimenti usa quello semplificato
-let clientModule;
+// Usa SOLO la versione semplificata (senza dipendenze native)
+// Questo è necessario per gli eseguibili pkg
 try {
-  clientModule = require('./client-simple.js');
+  require('./client-simple.js');
 } catch (e) {
-  try {
-    clientModule = require('./client.js');
-  } catch (e2) {
-    console.error('❌ Impossibile caricare il modulo client');
-    console.error('Errore:', e2.message);
-    console.log('\nPremi INVIO per chiudere...');
-    waitForEnter();
-  }
+  console.error('❌ Impossibile caricare il client');
+  console.error('Errore:', e.message);
+  console.log('\nPremi INVIO per chiudere...');
+  waitForEnter();
 }

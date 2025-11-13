@@ -2,9 +2,9 @@
   "name": "printnode-client",
   "version": "1.0.0",
   "description": "Client desktop per condivisione stampanti locali",
-  "main": "src/client.js",
+  "main": "src/launcher.js",
   "bin": {
-    "printnode-client": "src/client.js"
+    "printnode-client": "src/launcher.js"
   },
   "scripts": {
     "start": "node src/client.js",
@@ -15,7 +15,8 @@
   },
   "pkg": {
     "assets": [
-      ".env.example"
+      ".env.example",
+      "src/**/*.js"
     ],
     "outputPath": "dist"
   },

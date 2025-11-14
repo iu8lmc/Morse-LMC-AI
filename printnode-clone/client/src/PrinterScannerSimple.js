@@ -14,14 +14,18 @@ class PrinterScannerSimple {
       let systemPrinters = [];
 
       if (platform === 'win32') {
-        // Windows: usa wmic o PowerShell
+        // Windows: usa PowerShell con più dettagli
         try {
-          const output = execSync('wmic printer get name,default,status', { encoding: 'utf8' });
-          systemPrinters = this.parseWindowsPrinters(output);
-        } catch (e) {
-          console.log('Prova con PowerShell...');
-          const output = execSync('powershell "Get-Printer | Select-Object Name,Default | ConvertTo-Json"', { encoding: 'utf8' });
+          const output = execSync('powershell "Get-Printer | Where-Object {$_.Type -eq \'Local\' -or $_.Type -eq \'Connection\'} | Select-Object Name,DriverName,Default,PrinterStatus,Color,Duplex | ConvertTo-Json"', { encoding: 'utf8' });
           systemPrinters = this.parsePowerShellPrinters(output);
+        } catch (e) {
+          // Fallback a wmic
+          try {
+            const output = execSync('wmic printer get name,default,status', { encoding: 'utf8' });
+            systemPrinters = this.parseWindowsPrinters(output);
+          } catch (e2) {
+            console.error('Errore rilevamento stampanti Windows:', e2.message);
+          }
         }
       } else if (platform === 'darwin') {
         // macOS: usa lpstat
@@ -48,17 +52,44 @@ class PrinterScannerSimple {
     const lines = output.split('\n').slice(1); // Salta header
     const printers = [];
 
+    // Lista di stampanti virtuali/inutili da escludere
+    const excludeKeywords = [
+      'microsoft print to pdf',
+      'microsoft xps',
+      'onenote',
+      'fax',
+      'send to',
+      'foxit',
+      'adobe pdf',
+      'nitro',
+      'pdfcreator',
+      'doPDF',
+      'novaPDF',
+      'cutepdf',
+      'print to file',
+      'snagit'
+    ];
+
     for (const line of lines) {
       if (line.trim()) {
         const parts = line.trim().split(/\s+/);
-        if (parts.length >= 2) {
-          printers.push({
-            name: parts[0],
-            driver: 'Windows Printer',
-            isDefault: parts[1] === 'TRUE',
-            status: parts[2] || 'idle',
-            capabilities: {}
-          });
+        if (parts.length >= 1) {
+          const printerName = parts.slice(0, -2).join(' ') || parts[0];
+
+          // Filtra stampanti virtuali
+          const isVirtual = excludeKeywords.some(keyword =>
+            printerName.toLowerCase().includes(keyword)
+          );
+
+          if (!isVirtual && printerName) {
+            printers.push({
+              name: printerName,
+              driver: 'Windows Printer',
+              isDefault: parts[parts.length - 2] === 'TRUE',
+              status: parts[parts.length - 1] || 'idle',
+              capabilities: {}
+            });
+          }
         }
       }
     }
@@ -71,13 +102,39 @@ class PrinterScannerSimple {
       const data = JSON.parse(output);
       const printers = Array.isArray(data) ? data : [data];
 
-      return printers.map(p => ({
-        name: p.Name,
-        driver: 'Windows Printer',
-        isDefault: p.Default || false,
-        status: 'idle',
-        capabilities: {}
-      }));
+      // Lista di stampanti virtuali da escludere
+      const excludeKeywords = [
+        'microsoft print to pdf',
+        'microsoft xps',
+        'onenote',
+        'fax',
+        'send to',
+        'foxit',
+        'adobe pdf',
+        'nitro',
+        'pdfcreator',
+        'doPDF',
+        'novaPDF',
+        'cutepdf',
+        'print to file',
+        'snagit'
+      ];
+
+      return printers
+        .filter(p => {
+          const name = (p.Name || '').toLowerCase();
+          return !excludeKeywords.some(keyword => name.includes(keyword));
+        })
+        .map(p => ({
+          name: p.Name,
+          driver: p.DriverName || 'Windows Printer',
+          isDefault: p.Default || false,
+          status: p.PrinterStatus === 0 ? 'idle' : 'busy',
+          capabilities: {
+            color: p.Color || false,
+            duplex: p.Duplex || false
+          }
+        }));
     } catch (e) {
       return [];
     }

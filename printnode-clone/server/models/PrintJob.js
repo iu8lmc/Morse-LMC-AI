@@ -29,9 +29,11 @@ class PrintJob {
 
   static getPending(db, clientId, callback) {
     db.all(
-      `SELECT * FROM print_jobs
-       WHERE client_id = ? AND status = 'pending'
-       ORDER BY created_at ASC`,
+      `SELECT pj.*, p.name as printer_name
+       FROM print_jobs pj
+       JOIN printers p ON pj.printer_id = p.id
+       WHERE pj.client_id = ? AND pj.status = 'pending'
+       ORDER BY pj.created_at ASC`,
       [clientId],
       callback
     );

@@ -22,13 +22,27 @@ class PrintJobHandler {
       // Aggiorna stato a "printing"
       await this.apiClient.updateJobStatus(job.id, 'printing');
 
+      // Converti file_data in Buffer se necessario
+      let fileData;
+      if (Buffer.isBuffer(job.file_data)) {
+        fileData = job.file_data;
+      } else if (job.file_data && job.file_data.type === 'Buffer' && Array.isArray(job.file_data.data)) {
+        // Converti da oggetto JSON Buffer a Buffer vero
+        fileData = Buffer.from(job.file_data.data);
+      } else if (typeof job.file_data === 'string') {
+        // Se è una stringa base64
+        fileData = Buffer.from(job.file_data, 'base64');
+      } else {
+        throw new Error('Formato file_data non riconosciuto');
+      }
+
       // Salva il file temporaneamente
       const tempFilePath = path.join(
         this.tempDir,
         `${job.id}_${job.title || 'document'}`.replace(/[^a-z0-9._-]/gi, '_')
       );
 
-      fs.writeFileSync(tempFilePath, job.file_data);
+      fs.writeFileSync(tempFilePath, fileData);
 
       // Trova la stampante
       const printer = this.printerScanner.getPrinter(job.printer_name);

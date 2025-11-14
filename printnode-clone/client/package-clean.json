@@ -1,0 +1,33 @@
+{
+  "name": "printnode-client",
+  "version": "1.0.0",
+  "description": "Client desktop per condivisione stampanti locali",
+  "main": "src/launcher.js",
+  "bin": {
+    "printnode-client": "src/launcher.js"
+  },
+  "scripts": {
+    "start": "node src/launcher.js",
+    "build-win": "pkg . --targets node18-win-x64 --output dist/printnode-client-win.exe",
+    "build-linux": "pkg . --targets node18-linux-x64 --output dist/printnode-client-linux",
+    "build-mac": "pkg . --targets node18-macos-x64 --output dist/printnode-client-macos",
+    "build-all": "pkg . --targets node18-win-x64,node18-linux-x64,node18-macos-x64 --output dist/printnode-client"
+  },
+  "pkg": {
+    "assets": [
+      ".env.example",
+      "src/**/*.js"
+    ],
+    "outputPath": "dist"
+  },
+  "keywords": ["printing", "remote-printing", "print-client"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "socket.io-client": "^4.6.1",
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.1"
+  }
+}

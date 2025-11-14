@@ -7,7 +7,7 @@
     "printnode-client": "src/launcher.js"
   },
   "scripts": {
-    "start": "node src/client.js",
+    "start": "node src/launcher.js",
     "build-win": "pkg . --targets node18-win-x64 --output dist/printnode-client-win.exe",
     "build-linux": "pkg . --targets node18-linux-x64 --output dist/printnode-client-linux",
     "build-mac": "pkg . --targets node18-macos-x64 --output dist/printnode-client-macos",
@@ -25,12 +25,7 @@
   "license": "MIT",
   "dependencies": {
     "socket.io-client": "^4.6.1",
-    "axios": "^1.4.0",
     "dotenv": "^16.0.3"
-  },
-  "optionalDependencies": {
-    "printer": "^0.4.0",
-    "pdf-to-printer": "^5.5.0"
   },
   "devDependencies": {
     "pkg": "^5.8.1"

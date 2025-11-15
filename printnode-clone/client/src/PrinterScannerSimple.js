@@ -183,10 +183,10 @@ class PrinterScannerSimple {
         let command;
 
         if (platform === 'win32') {
-          // Windows: usa copy per invio RAW alla stampante
-          // Questo funziona per tutti i tipi di file
-          const escapedPath = filePath.replace(/\\/g, '\\\\');
-          command = `copy /b "${filePath}" "\\\\%COMPUTERNAME%\\${printerName}"`;
+          // Windows: usa comando print nativo di Windows
+          // Questo funziona per tutti i tipi di file e gestisce spazi nel nome
+          const escapedPrinter = printerName.replace(/"/g, '""');
+          command = `print /D:"${escapedPrinter}" "${filePath}"`;
         } else if (platform === 'darwin') {
           // macOS: usa lp
           command = `lp -d "${printerName}" "${filePath}"`;
@@ -219,8 +219,9 @@ class PrinterScannerSimple {
           fs.writeFileSync(tmpFile, data);
 
           try {
-            // Usa copy /b per invio RAW
-            execSync(`copy /b "${tmpFile}" "\\\\%COMPUTERNAME%\\${printerName}"`, { stdio: 'pipe' });
+            // Usa comando print nativo per invio RAW
+            const escapedPrinter = printerName.replace(/"/g, '""');
+            execSync(`print /D:"${escapedPrinter}" "${tmpFile}"`, { stdio: 'pipe' });
             console.log(`✓ Dati RAW inviati a ${printerName}`);
             resolve('success');
           } finally {

@@ -183,8 +183,10 @@ class PrinterScannerSimple {
         let command;
 
         if (platform === 'win32') {
-          // Windows: usa PDFtoPrinter o print command
-          command = `powershell -Command "Start-Process -FilePath '${filePath}' -Verb Print -PassThru | Out-Null"`;
+          // Windows: usa copy per invio RAW alla stampante
+          // Questo funziona per tutti i tipi di file
+          const escapedPath = filePath.replace(/\\/g, '\\\\');
+          command = `copy /b "${filePath}" "\\\\%COMPUTERNAME%\\${printerName}"`;
         } else if (platform === 'darwin') {
           // macOS: usa lp
           command = `lp -d "${printerName}" "${filePath}"`;
@@ -193,40 +195,57 @@ class PrinterScannerSimple {
           command = `lp -d "${printerName}" "${filePath}"`;
         }
 
-        execSync(command);
+        execSync(command, { stdio: 'pipe' });
         console.log(`✓ Lavoro di stampa inviato a ${printerName}`);
         resolve('success');
       } catch (error) {
-        console.error('Errore stampa:', error);
+        console.error('Errore stampa:', error.message);
         reject(error);
       }
     });
   }
 
-  // Stampa dati RAW
+  // Stampa dati RAW direttamente
   async printDirect(printerName, data, type = 'RAW') {
     return new Promise((resolve, reject) => {
       try {
         const platform = os.platform();
         const fs = require('fs');
         const path = require('path');
-        const os = require('os');
 
-        // Salva in file temporaneo
-        const tmpFile = path.join(os.tmpdir(), `print_${Date.now()}.txt`);
-        fs.writeFileSync(tmpFile, data);
+        if (platform === 'win32') {
+          // Windows: scrivi direttamente sulla porta della stampante
+          const tmpFile = path.join(os.tmpdir(), `printraw_${Date.now()}.bin`);
+          fs.writeFileSync(tmpFile, data);
 
-        // Stampa il file
-        this.printFile(printerName, tmpFile)
-          .then(() => {
+          try {
+            // Usa copy /b per invio RAW
+            execSync(`copy /b "${tmpFile}" "\\\\%COMPUTERNAME%\\${printerName}"`, { stdio: 'pipe' });
+            console.log(`✓ Dati RAW inviati a ${printerName}`);
+            resolve('success');
+          } finally {
             // Pulisci file temporaneo
             setTimeout(() => {
               try { fs.unlinkSync(tmpFile); } catch (e) {}
-            }, 5000);
+            }, 2000);
+          }
+        } else {
+          // Linux/macOS: usa lp con dati stdin
+          const tmpFile = path.join(os.tmpdir(), `printraw_${Date.now()}.bin`);
+          fs.writeFileSync(tmpFile, data);
+
+          try {
+            execSync(`lp -d "${printerName}" -o raw "${tmpFile}"`, { stdio: 'pipe' });
+            console.log(`✓ Dati RAW inviati a ${printerName}`);
             resolve('success');
-          })
-          .catch(reject);
+          } finally {
+            setTimeout(() => {
+              try { fs.unlinkSync(tmpFile); } catch (e) {}
+            }, 2000);
+          }
+        }
       } catch (error) {
+        console.error('Errore stampa RAW:', error.message);
         reject(error);
       }
     });

@@ -1,0 +1,274 @@
+<Window x:Class="RadioLoggerApp.SliceMaster.SliceMasterWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RadioLoggerApp.SliceMaster"
+        mc:Ignorable="d"
+        Title="SliceMaster per SmartSDR 4.0"
+        Height="800" Width="1200"
+        WindowStartupLocation="CenterScreen"
+        Background="#FF1E1E1E">
+
+    <Window.Resources>
+        <!-- Converter -->
+        <local:InverseBoolConverter x:Key="InverseBoolConverter"/>
+        <local:BoolToColorConverter x:Key="BoolToColorConverter"/>
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <local:FrequencyToStringConverter x:Key="FrequencyToStringConverter"/>
+        <!-- Stile per i pulsanti -->
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="#FF2D2D30"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#FF3F3F46"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FF3F3F46"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.5"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Stile per le TextBox -->
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#FF2D2D30"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#FF3F3F46"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+
+        <!-- Stile per i ComboBox -->
+        <Style x:Key="ModernComboBox" TargetType="ComboBox">
+            <Setter Property="Background" Value="#FF2D2D30"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#FF3F3F46"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+
+        <!-- Stile per le Label -->
+        <Style TargetType="Label">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+
+        <!-- Stile per i GroupBox -->
+        <Style TargetType="GroupBox">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#FF3F3F46"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="5"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Barra superiore - Connessione -->
+        <Border Grid.Row="0" Background="#FF252526" Padding="10" BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Column="0" Content="Radio IP:" VerticalAlignment="Center"/>
+                <TextBox Grid.Column="1" x:Name="txtRadioIp" Text="192.168.1.100" Style="{StaticResource ModernTextBox}" VerticalAlignment="Center" Margin="5,0"/>
+                <Button Grid.Column="2" x:Name="btnConnect" Content="Connetti" Style="{StaticResource ModernButton}" Click="BtnConnect_Click" Width="100"/>
+                <Label Grid.Column="3" x:Name="lblConnectionStatus" Content="Non connesso" VerticalAlignment="Center" Margin="10,0" Foreground="Orange"/>
+                <Button Grid.Column="4" x:Name="btnDiscover" Content="Scopri Radio" Style="{StaticResource ModernButton}" Click="BtnDiscover_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- Area principale -->
+        <Grid Grid.Row="1" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Pannello slice -->
+            <GroupBox Grid.Column="0" Header="Slice Attive">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Controlli slice -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
+                        <Button x:Name="btnNewSlice" Content="Nuova Slice" Style="{StaticResource ModernButton}" Click="BtnNewSlice_Click"/>
+                        <Button x:Name="btnRemoveSlice" Content="Rimuovi Slice" Style="{StaticResource ModernButton}" Click="BtnRemoveSlice_Click"/>
+                        <Button x:Name="btnRefresh" Content="Aggiorna" Style="{StaticResource ModernButton}" Click="BtnRefresh_Click"/>
+                    </StackPanel>
+
+                    <!-- Lista slice -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="slicesList" Margin="5">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#FF2D2D30" BorderBrush="#FF3F3F46" BorderThickness="1" Margin="0,5" Padding="10" CornerRadius="5">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Header -->
+                                            <Label Grid.Row="0" Grid.Column="0" Content="{Binding SliceId, StringFormat='Slice {0}'}" FontWeight="Bold" FontSize="14"/>
+                                            <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal">
+                                                <CheckBox Content="TX" IsChecked="{Binding IsTx}" Foreground="Red" FontWeight="Bold" Margin="5,0" IsEnabled="False"/>
+                                                <Button Content="🔒" Width="30" Height="30" Click="BtnLockSlice_Click" Tag="{Binding}"
+                                                        Background="{Binding IsLocked, Converter={StaticResource BoolToColorConverter}}" Margin="5,0"/>
+                                            </StackPanel>
+
+                                            <!-- Frequenza e Modo -->
+                                            <Grid Grid.Row="1" Grid.ColumnSpan="3" Margin="0,5">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="200"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <Label Grid.Column="0" Content="Freq (MHz):" VerticalAlignment="Center"/>
+                                                <TextBox Grid.Column="1" Text="{Binding Frequency, StringFormat=F6}" Style="{StaticResource ModernTextBox}"
+                                                         Tag="{Binding}" LostFocus="TxtFrequency_LostFocus" IsEnabled="{Binding IsLocked, Converter={StaticResource InverseBoolConverter}}"/>
+                                                <Label Grid.Column="2" Content="Modo:" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                                <ComboBox Grid.Column="3" x:Name="cmbMode" SelectedItem="{Binding Mode}" Style="{StaticResource ModernComboBox}"
+                                                          Tag="{Binding}" SelectionChanged="CmbMode_SelectionChanged" IsEnabled="{Binding IsLocked, Converter={StaticResource InverseBoolConverter}}"/>
+                                                <Button Grid.Column="5" Content="Set TX" Style="{StaticResource ModernButton}" Click="BtnSetTx_Click" Tag="{Binding}" HorizontalAlignment="Right"/>
+                                            </Grid>
+
+                                            <!-- Filtri -->
+                                            <Grid Grid.Row="2" Grid.ColumnSpan="3" Margin="0,5">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <Label Grid.Column="0" Content="Filtro Low:" VerticalAlignment="Center"/>
+                                                <TextBox Grid.Column="1" Text="{Binding FilterLow}" Style="{StaticResource ModernTextBox}"
+                                                         Tag="{Binding}" LostFocus="TxtFilter_LostFocus" IsEnabled="{Binding IsLocked, Converter={StaticResource InverseBoolConverter}}"/>
+                                                <Label Grid.Column="2" Content="High:" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                                <TextBox Grid.Column="3" Text="{Binding FilterHigh}" Style="{StaticResource ModernTextBox}"
+                                                         Tag="{Binding}" LostFocus="TxtFilter_LostFocus" IsEnabled="{Binding IsLocked, Converter={StaticResource InverseBoolConverter}}"/>
+                                            </Grid>
+
+                                            <!-- Controlli audio e RF -->
+                                            <Grid Grid.Row="3" Grid.ColumnSpan="3" Margin="0,5">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <Label Grid.Column="0" Content="RF Gain:" VerticalAlignment="Center"/>
+                                                <Slider Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding RfGain}"
+                                                        VerticalAlignment="Center" Margin="5,0" Tag="{Binding}" ValueChanged="SliderRfGain_ValueChanged"
+                                                        IsEnabled="{Binding IsLocked, Converter={StaticResource InverseBoolConverter}}"/>
+                                                <Label Grid.Column="2" Content="AF Gain:" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                                <Slider Grid.Column="3" Minimum="0" Maximum="100" Value="{Binding AfGain}"
+                                                        VerticalAlignment="Center" Margin="5,0" Tag="{Binding}" ValueChanged="SliderAfGain_ValueChanged"
+                                                        IsEnabled="{Binding IsLocked, Converter={StaticResource InverseBoolConverter}}"/>
+                                                <CheckBox Grid.Column="4" Content="NB" IsChecked="{Binding NbEnabled}" Margin="10,0"
+                                                          Tag="{Binding}" Click="ChkNb_Click" IsEnabled="{Binding IsLocked, Converter={StaticResource InverseBoolConverter}}"/>
+                                                <CheckBox Grid.Column="5" Content="NR" IsChecked="{Binding NrEnabled}" Margin="10,0"
+                                                          Tag="{Binding}" Click="ChkNr_Click" IsEnabled="{Binding IsLocked, Converter={StaticResource InverseBoolConverter}}"/>
+                                                <CheckBox Grid.Column="6" Content="ANF" IsChecked="{Binding AnfEnabled}" Margin="10,0"
+                                                          Tag="{Binding}" Click="ChkAnf_Click" IsEnabled="{Binding IsLocked, Converter={StaticResource InverseBoolConverter}}"/>
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </GroupBox>
+
+            <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Background="#FF3F3F46"/>
+
+            <!-- Pannello laterale -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Bande rapide -->
+                <GroupBox Grid.Row="0" Header="Selezione Banda">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="bandsList" Margin="5">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding Name}" Click="BtnBand_Click" Tag="{Binding}"
+                                            Style="{StaticResource ModernButton}" HorizontalAlignment="Stretch" Margin="0,2"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </GroupBox>
+
+                <!-- Profili -->
+                <GroupBox Grid.Row="1" Header="Profili">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <ListBox Grid.Row="0" x:Name="profilesList" Background="#FF2D2D30" Foreground="White"
+                                 BorderBrush="#FF3F3F46" Margin="5" DisplayMemberPath="Name"/>
+
+                        <StackPanel Grid.Row="1" Orientation="Vertical" Margin="5">
+                            <Button Content="Carica Profilo" Style="{StaticResource ModernButton}" Click="BtnLoadProfile_Click" Margin="0,2"/>
+                            <Button Content="Salva Profilo" Style="{StaticResource ModernButton}" Click="BtnSaveProfile_Click" Margin="0,2"/>
+                            <Button Content="Elimina Profilo" Style="{StaticResource ModernButton}" Click="BtnDeleteProfile_Click" Margin="0,2"/>
+                        </StackPanel>
+                    </Grid>
+                </GroupBox>
+            </Grid>
+        </Grid>
+
+        <!-- Barra di stato -->
+        <Border Grid.Row="2" Background="#FF252526" Padding="10" BorderBrush="#FF3F3F46" BorderThickness="0,1,0,0">
+            <TextBlock x:Name="txtStatus" Text="Pronto" Foreground="LightGray" FontSize="12"/>
+        </Border>
+    </Grid>
+</Window>

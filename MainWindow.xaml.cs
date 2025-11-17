@@ -159,6 +159,25 @@ private void LoadLogEntries()
 
         private void BtnMorseDecoder_Click(object sender, RoutedEventArgs e)
         {
+            OpenMorseDecoder_Click(sender, e);
+        }
+
+        private void OpenSliceMaster_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var sliceMasterWindow = new SliceMaster.SliceMasterWindow();
+                sliceMasterWindow.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Errore nell'apertura di SliceMaster: {ex.Message}",
+                              "Errore", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void OpenMorseDecoder_Click(object sender, RoutedEventArgs e)
+        {
             try
             {
                 var morseWindow = new MorseDecoder.MorseDecoderWindow();

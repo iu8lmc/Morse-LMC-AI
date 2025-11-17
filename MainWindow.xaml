@@ -45,6 +45,10 @@
                 <MenuItem Header="Delete Entry" />
                 <MenuItem Header="Load Log" Click="LoadLog_Click" />
             </MenuItem>
+            <MenuItem Header="Tools">
+                <MenuItem Header="SliceMaster for SmartSDR 4.0" Click="OpenSliceMaster_Click" />
+                <MenuItem Header="Morse Code Decoder" Click="OpenMorseDecoder_Click" />
+            </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="About" />
             </MenuItem>

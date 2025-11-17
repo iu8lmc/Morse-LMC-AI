@@ -57,11 +57,32 @@ git clone https://github.com/iu8lmc/Morse-LMC-AI.git
 cd Morse-LMC-AI
 ```
 
-### Build
+### Build Rapida (Windows)
+
+**Opzione 1: Build Standard**
+```batch
+build.bat
+```
+Crea un eseguibile leggero in `./publish/RadioLoggerApp.exe` (richiede .NET 7.0 Runtime)
+
+**Opzione 2: Build Standalone**
+```batch
+build-standalone.bat
+```
+Crea un eseguibile standalone in `./publish-standalone/RadioLoggerApp.exe` (non richiede .NET installato)
+
+**Opzione 3: PowerShell (Avanzato)**
+```powershell
+.\Build.ps1 -Standalone -SingleFile
+```
+
+### Build Manuale
 1. Aprire la soluzione in Visual Studio 2022 o superiore
 2. Ripristinare i pacchetti NuGet
 3. Compilare la soluzione (Build → Build Solution)
-4. Eseguire il progetto
+4. Pubblicare il progetto
+
+📖 **[Guida completa alla compilazione](BUILD_INSTRUCTIONS.md)** - Istruzioni dettagliate per tutti i metodi di build
 
 ## Dipendenze
 

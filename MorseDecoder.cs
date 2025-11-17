@@ -33,13 +33,9 @@ namespace RadioLoggerApp.MorseDecoder
             { "-.-.--", '!' }, { "-..-.", '/' }, { "-.--.", '(' }, { "-.--.-", ')' },
             { ".-...", '&' }, { "---...", ':' }, { "-.-.-.", ';' }, { "-...-", '=' },
             { ".-.-.", '+' }, { "-....-", '-' }, { "..--.-", '_' }, { ".-..-.", '"' },
-            { "...-..-", '$' }, { ".--.-.", '@' },
+            { "...-..-", '$' }, { ".--.-.", '@' }
 
-            // Segnali prosigns
-            { ".-.-.", '<AR>' },  // End of message
-            { "-...-", '<BT>' },  // Break
-            { "...-.-", '<SK>' }, // End of contact
-            { "...-..", '<SOS>' } // SOS
+            // Nota: I prosigns (AR, BT, SK, SOS) sono gestiti separatamente
         };
 
         // Stato del decoder

@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ApplicationIcon>Resources\flexmaster.ico</ApplicationIcon>
+    <AssemblyName>FlexMaster6000</AssemblyName>
+    <Version>1.0.0</Version>
+    <Authors>FlexMaster6000 Team</Authors>
+    <Company>Amateur Radio</Company>
+    <Product>FlexMaster6000</Product>
+    <Description>Enhanced slice control for Flex 6000 series radios - SmartSDR 4.0 Compatible</Description>
+    <Copyright>Copyright © 2025</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- FlexLib API v3 DLL - Download from https://www.flexradio.com/software/flexlib_api_v3/ -->
+    <!-- Extract the ZIP and place Flex.Smoothlake.FlexLib.dll in the Libs folder -->
+    <Reference Include="Flex.Smoothlake.FlexLib">
+      <HintPath>Libs\Flex.Smoothlake.FlexLib.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- NuGet Packages -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Libs\" />
+    <Folder Include="Resources\" />
+    <Folder Include="Views\" />
+    <Folder Include="ViewModels\" />
+    <Folder Include="Models\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
+</Project>

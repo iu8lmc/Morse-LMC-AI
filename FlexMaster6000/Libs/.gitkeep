@@ -1,0 +1,8 @@
+# FlexLib DLL Location
+
+Place the FlexLib DLL file here:
+- Flex.Smoothlake.FlexLib.dll
+
+Download from: https://www.flexradio.com/software/flexlib_api_v3/
+
+This folder is required for the application to run.

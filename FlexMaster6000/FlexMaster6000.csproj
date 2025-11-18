@@ -22,7 +22,8 @@
   <ItemGroup>
     <!-- FlexLib API v3 DLL - Download from https://www.flexradio.com/software/flexlib_api_v3/ -->
     <!-- Extract the ZIP and place Flex.Smoothlake.FlexLib.dll in the Libs folder -->
-    <Reference Include="Flex.Smoothlake.FlexLib">
+    <!-- Reference is OPTIONAL - app will compile without it in demo mode -->
+    <Reference Include="Flex.Smoothlake.FlexLib" Condition="Exists('Libs\Flex.Smoothlake.FlexLib.dll')">
       <HintPath>Libs\Flex.Smoothlake.FlexLib.dll</HintPath>
       <Private>True</Private>
     </Reference>

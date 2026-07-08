@@ -9,6 +9,7 @@ using Microsoft.Win32;
 using OxyPlot;
 using OxyPlot.Series;
 using OxyPlot.Axes;
+using RadioLoggerApp.MorseDecoder.SmartCW;
 
 namespace RadioLoggerApp.MorseDecoder
 {
@@ -20,7 +21,7 @@ namespace RadioLoggerApp.MorseDecoder
         // Componenti del sistema
         private MorseAudioCapture? audioCapture;
         private MorseSignalProcessor? signalProcessor;
-        private MorseDecoder? morseDecoder;
+        private SmartCwDecoder? smartDecoder;
         private MorseAIEnhancer? aiEnhancer;
 
         // Timer per aggiornamenti UI
@@ -64,7 +65,7 @@ namespace RadioLoggerApp.MorseDecoder
             {
                 audioCapture = new MorseAudioCapture(sampleRate: 44100, channels: 1);
                 signalProcessor = new MorseSignalProcessor(sampleRate: 44100);
-                morseDecoder = new MorseDecoder(initialWPM: 20);
+                smartDecoder = new SmartCwDecoder(sampleRate: 44100, initialFrequency: 700);
                 aiEnhancer = new MorseAIEnhancer();
 
                 // Sottoscrivi agli eventi
@@ -75,11 +76,10 @@ namespace RadioLoggerApp.MorseDecoder
                     audioCapture.ErrorOccurred += AudioCapture_ErrorOccurred;
                 }
 
-                if (morseDecoder != null)
+                if (smartDecoder != null)
                 {
-                    morseDecoder.CharacterDecoded += MorseDecoder_CharacterDecoded;
-                    morseDecoder.WordDecoded += MorseDecoder_WordDecoded;
-                    morseDecoder.TimingCalibrated += MorseDecoder_TimingCalibrated;
+                    smartDecoder.CharacterDecoded += MorseDecoder_CharacterDecoded;
+                    smartDecoder.WordDecoded += MorseDecoder_WordDecoded;
                 }
 
                 // Timer per aggiornamenti periodici
@@ -209,7 +209,7 @@ namespace RadioLoggerApp.MorseDecoder
         {
             try
             {
-                if (audioCapture == null || signalProcessor == null || morseDecoder == null)
+                if (audioCapture == null || signalProcessor == null || smartDecoder == null)
                 {
                     MessageBox.Show("Sistema non inizializzato correttamente", "Errore",
                                   MessageBoxButton.OK, MessageBoxImage.Error);
@@ -262,6 +262,9 @@ namespace RadioLoggerApp.MorseDecoder
                 updateTimer?.Stop();
                 processingTimer?.Stop();
 
+                // Emetti l'eventuale testo ancora in attesa di consenso nel beam
+                smartDecoder?.Flush();
+
                 isDecoding = false;
 
                 btnStart.IsEnabled = true;
@@ -286,7 +289,7 @@ namespace RadioLoggerApp.MorseDecoder
         {
             txtDecoded.Clear();
             txtLog.Clear();
-            morseDecoder?.ClearDecodedText();
+            smartDecoder?.Reset();
             waveformBuffer.Clear();
             spectrumBuffer.Clear();
 
@@ -411,14 +414,9 @@ namespace RadioLoggerApp.MorseDecoder
                     }
                 });
 
-                // Passa l'envelope al decoder Morse
-                if (morseDecoder != null && processedData.Envelope.Length > 0)
-                {
-                    foreach (var envelopeValue in processedData.Envelope)
-                    {
-                        morseDecoder.ProcessEnvelopeSample(envelopeValue, currentTimestamp++);
-                    }
-                }
+                // Passa l'audio grezzo al motore SmartCW: fa da sé rilevamento
+                // tono (Goertzel + AFC), gate adattivo e decodifica bayesiana
+                smartDecoder?.ProcessAudio(e.Samples);
             }
             catch (Exception ex)
             {
@@ -502,22 +500,21 @@ namespace RadioLoggerApp.MorseDecoder
         /// </summary>
         private void UpdateStatistics()
         {
-            if (signalProcessor != null)
+            if (smartDecoder != null)
             {
-                txtFrequency.Text = $"{signalProcessor.CurrentFrequency:F1} Hz";
-                txtSNR.Text = $"{signalProcessor.SNR:F1} dB";
-            }
+                txtFrequency.Text = $"{smartDecoder.Frequency:F1} Hz";
+                txtSNR.Text = $"{smartDecoder.SnrDb:F1} dB";
+                txtWPM.Text = $"{smartDecoder.CurrentWpm:F1} WPM";
+                txtConfidence.Text = $"{smartDecoder.Confidence:P0}";
+                txtCharCount.Text = smartDecoder.CharactersDecoded.ToString();
 
-            if (morseDecoder != null)
-            {
-                txtWPM.Text = $"{morseDecoder.CurrentWPM:F1} WPM";
-                txtConfidence.Text = $"{morseDecoder.Confidence:P0}";
-                txtCharCount.Text = morseDecoder.CharactersDecoded.ToString();
-                txtErrorCount.Text = morseDecoder.ErrorsDetected.ToString();
+                // I simboli non riconosciuti vengono decodificati come '?'
+                int errors = smartDecoder.DecodedText.Count(c => c == '?');
+                txtErrorCount.Text = errors.ToString();
 
-                if (morseDecoder.CharactersDecoded > 0)
+                if (smartDecoder.CharactersDecoded > 0)
                 {
-                    double accuracy = 1.0 - (double)morseDecoder.ErrorsDetected / morseDecoder.CharactersDecoded;
+                    double accuracy = 1.0 - (double)errors / smartDecoder.CharactersDecoded;
                     txtAccuracy.Text = $"{accuracy:P0}";
                 }
             }

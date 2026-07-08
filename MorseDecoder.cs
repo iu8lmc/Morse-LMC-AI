@@ -33,13 +33,11 @@ namespace RadioLoggerApp.MorseDecoder
             { "-.-.--", '!' }, { "-..-.", '/' }, { "-.--.", '(' }, { "-.--.-", ')' },
             { ".-...", '&' }, { "---...", ':' }, { "-.-.-.", ';' }, { "-...-", '=' },
             { ".-.-.", '+' }, { "-....-", '-' }, { "..--.-", '_' }, { ".-..-.", '"' },
-            { "...-..-", '$' }, { ".--.-.", '@' },
+            { "...-..-", '$' }, { ".--.-.", '@' }
 
-            // Segnali prosigns
-            { ".-.-.", '<AR>' },  // End of message
-            { "-...-", '<BT>' },  // Break
-            { "...-.-", '<SK>' }, // End of contact
-            { "...-..", '<SOS>' } // SOS
+            // Nota prosigns: <AR> e <BT> condividono il pattern con '+' e '='
+            // già presenti sopra; i prosigns multi-carattere sono gestiti dal
+            // nuovo motore SmartCW (BayesianTimingDecoder) che decodifica stringhe.
         };
 
         // Stato del decoder
